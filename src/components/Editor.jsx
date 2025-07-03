@@ -17,39 +17,15 @@ export default function Editor({ onPlaceholder }) {
           "h-[70vh]",
           "overflow-auto",
           "rounded-lg",
-          "focus:outline-none", // remove the default outline
+          "focus:outline-none",
           "focus:ring-0",
           "overflow-auto",
           "pt-[10px]",
         ].join(" "),
       },
       plugins: [
-        // underline any “XXXX” spans
         new Plugin({
-          props: {
-            decorations(state) {
-              const decos = [];
-              const text = state.doc.textBetween(
-                0,
-                state.doc.content.size,
-                undefined,
-                "\ufffc"
-              );
-              let match;
-              const pattern = /\bXXXX\b/g;
-              while ((match = pattern.exec(text))) {
-                const from = match.index + 1;
-                const to = from + match[0].length;
-                decos.push(
-                  Decoration.inline(from, to, {
-                    style:
-                      "text-decoration: underline; text-decoration-color: #ffba08",
-                  })
-                );
-              }
-              return DecorationSet.create(state.doc, decos);
-            },
-          },
+          props: {},
         }),
       ],
     },

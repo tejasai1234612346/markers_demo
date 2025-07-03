@@ -55,7 +55,7 @@ export default function EditorPage() {
           <Editor onPlaceholder={handlePlaceholder} />
         </div>
       </div>
-      <div className="w-[30vw] p-4 rounded-2xl h-[100%]  bg-white">
+      <div className="w-[30vw] p-4 rounded-2xl h-[100%]  bg-white overflow-scroll">
         {/* suggestion box */}
         <div className="flex justify-between p-[6px] mb-[10px] items-center border-b border-black/5">
           <h2 className="text-[1.2rem] font-semibold text-[#2d3748]">

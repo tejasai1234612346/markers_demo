@@ -5,37 +5,49 @@ import suggestReplacement from "../services/apiServices";
 
 export default function EditorPage() {
   const [loading, setLoading] = useState(false);
-  const [placeholderInfo, setPlaceholderInfo] = useState(null);
-  const [suggestion, setSuggestion] = useState(null);
 
+  const [suggestions, setSuggestions] = useState([]);
   const handlePlaceholder = useCallback(
     async (info) => {
-      // info: { from, to, before, after }
       if (loading) return;
       setLoading(true);
-      setPlaceholderInfo(info);
-      // 2. Call your AI helper
+
+      // 1) Get AI suggestion
       const replacement = await suggestReplacement({
         before: info.before,
         after: info.after,
       });
       setLoading(false);
-      setSuggestion(replacement);
+
+      // 2) Immediately apply it in the editor
+      info.editor
+        .chain()
+        .focus()
+        .deleteRange({ from: info.from, to: info.to })
+        .insertContentAt(info.from, replacement)
+        .run();
+
+      // 3) Record it in your history
+      setSuggestions((all) => [
+        ...all,
+        {
+          id: Date.now(), // simple unique key
+          before: info.before,
+          after: info.after,
+          replacement,
+        },
+      ]);
     },
     [loading]
   );
 
   return (
-    <div className="p-8 pl-[20px] h-[90vh] flex items-start justify-around  bg-gradient-to-br from-[#667eea] to-[#764ba2]   gap-8">
+    <div className="p-8 pl-[20px] h-[90vh] flex items-start justify-around  bg-gradient-to-br from-gray-200 to-gray-400 gap-8">
       <div className="w-[70vw] rounded-2xl p-4 h-[100%] bg-white">
         <div className="flex justify-between p-[6px] items-center border-b border-black/5">
           <h2 className="text-[1.2rem] font-semibold text-[#2d3748]">
             Document Editor
           </h2>
-          <div className="flex gap-4 text-sm text-slate-500">
-            <span id="word-count">0 words</span>
-            <span id="char-count">0 characters</span>
-          </div>
         </div>
 
         {/* 60vw × 70vh container */}
@@ -47,69 +59,29 @@ export default function EditorPage() {
         {/* suggestion box */}
         <div className="flex justify-between p-[6px] mb-[10px] items-center border-b border-black/5">
           <h2 className="text-[1.2rem] font-semibold text-[#2d3748]">
-            AI Suggestions
+            AI Suggestions Made
           </h2>
         </div>
-        {placeholderInfo && suggestion && (
-          <div className="relative w-[70%] p-4 bg-gray-50 rounded-2xl shadow-lg">
-            {/* Floating label */}
-            <span className="bg-gray-50 text-xs font-medium text-indigo-500">
-              Suggested change
-            </span>
 
-            {/* Body */}
-            <div className="pt-4 space-y-4">
-              {/* “Before” */}
-              <div>
-                <div className="text-sm text-gray-600 mb-1">Before:</div>
-                <div className="italic text-gray-800 text-sm">
-                  …{placeholderInfo.before}
-                  <span className="bg-yellow-100 px-1">XXXX</span>
-                  {placeholderInfo.after}…
-                </div>
-              </div>
-
-              {/* “After” */}
-              <div>
-                <div className="text-sm text-gray-600 mb-1">After:</div>
-                <div className="text-gray-900 text-sm leading-snug">
-                  …{placeholderInfo.before}{" "}
-                  <span className="bg-yellow-100 px-1">X{suggestion}</span>{" "}
-                  {placeholderInfo.after}…
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div className="flex justify-end space-x-2">
-                <button
-                  className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 transition"
-                  onClick={() => {
-                    setPlaceholderInfo(null);
-                    setSuggestion(null);
-                  }}
-                >
-                  ✕ Dismiss
-                </button>
-                <button
-                  className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 transition"
-                  onClick={() => {
-                    const { editor, from, to } = placeholderInfo;
-                    editor
-                      .chain()
-                      .focus()
-                      .deleteRange({ from, to })
-                      .insertContentAt(from, suggestion)
-                      .run();
-                    setPlaceholderInfo(null);
-                    setSuggestion(null);
-                  }}
-                >
-                  ✓ Accept
-                </button>
-              </div>
+        {suggestions.map((s) => (
+          <div
+            key={s.id}
+            className="mb-4 w-[95%] p-4 bg-gray-50 rounded-lg shadow-sm"
+          >
+            <div className="text-xs text-gray-500 mb-1">Before:</div>
+            <div className="italic text-gray-800 mb-2">
+              …{s.before}
+              <span className="bg-yellow-200 px-1">XXXX</span>
+              {s.after}…
+            </div>
+            <div className="text-xs text-gray-500 mb-1">Replaced With:</div>
+            <div className="italic text-gray-800 mb-2">
+              …{s.before}
+              <span className="bg-orange-200 px-1">{s.replacement}</span>
+              {s.after}…
             </div>
           </div>
-        )}
+        ))}
       </div>
     </div>
   );

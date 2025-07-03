@@ -54,7 +54,9 @@ export default function Editor({ onPlaceholder }) {
       ],
     },
     autofocus: "end",
-    onCreate: ({ editor }) => editor.chain().focus().run(),
+    onCreate: ({ editor }) => {
+      editor.chain().focus().run();
+    },
     onUpdate: ({ editor }) => {
       const text = editor.getText();
       const match = text.match(/\bXXXX\b/);

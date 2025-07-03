@@ -1,7 +1,6 @@
 // src/pages/EditorPage.jsx
 import React, { useState, useCallback } from "react";
 import Editor from "../components/Editor";
-import NavBar from "../components/NavBar";
 import suggestReplacement from "../services/apiServices";
 
 export default function EditorPage() {
@@ -29,71 +28,85 @@ export default function EditorPage() {
   return (
     <div className="p-8 pl-[20px] h-[90vh] flex items-start justify-around  bg-gradient-to-br from-[#667eea] to-[#764ba2]   gap-8">
       <div className="w-[70vw] rounded-2xl p-4 h-[100%] bg-white">
-        <div class="flex justify-between p-[6px] items-center border-b border-black/5">
+        <div className="flex justify-between p-[6px] items-center border-b border-black/5">
           <h2 className="text-[1.2rem] font-semibold text-[#2d3748]">
             Document Editor
           </h2>
-          <div class="flex gap-4 text-sm text-slate-500">
+          <div className="flex gap-4 text-sm text-slate-500">
             <span id="word-count">0 words</span>
             <span id="char-count">0 characters</span>
           </div>
         </div>
 
         {/* 60vw × 70vh container */}
-        <div className="w-full h-[95%] p-2 overflow-auto">
+        <div className="w-full min-h-[90%] p-2 overflow-auto">
           <Editor onPlaceholder={handlePlaceholder} />
         </div>
       </div>
-      <div className="w-[30vw] p-4 rounded-2xl h-[100%] bg-white">
+      <div className="w-[30vw] p-4 rounded-2xl h-[100%]  bg-white">
         {/* suggestion box */}
-        <div class="flex justify-between p-[6px] items-center border-b border-black/5">
+        <div className="flex justify-between p-[6px] mb-[10px] items-center border-b border-black/5">
           <h2 className="text-[1.2rem] font-semibold text-[#2d3748]">
             AI Suggestions
           </h2>
         </div>
         {placeholderInfo && suggestion && (
-          <div className="w-[70%] p-4 bg-white border rounded shadow-lg">
-            <div className="mb-3">
-              <div className="text-sm text-gray-600 mb-1">Before:</div>
-              <div className="italic text-gray-800 text-sm">
-                …{placeholderInfo.before}
-                <span className="bg-yellow-100 px-1">XXXX</span>
-                {placeholderInfo.after}…
+          <div className="relative w-[70%] p-4 bg-gray-50 rounded-2xl shadow-lg">
+            {/* Floating label */}
+            <span className="bg-gray-50 text-xs font-medium text-indigo-500">
+              Suggested change
+            </span>
+
+            {/* Body */}
+            <div className="pt-4 space-y-4">
+              {/* “Before” */}
+              <div>
+                <div className="text-sm text-gray-600 mb-1">Before:</div>
+                <div className="italic text-gray-800 text-sm">
+                  …{placeholderInfo.before}
+                  <span className="bg-yellow-100 px-1">XXXX</span>
+                  {placeholderInfo.after}…
+                </div>
               </div>
-            </div>
-            <div className="mb-4">
-              <div className="text-sm text-gray-600 mb-1">After:</div>
-              <div className="text-gray-900">{suggestion}</div>
-            </div>
-            <div className="flex justify-end space-x-2">
-              <button
-                className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
-                onClick={() => {
-                  // cancel — just clear out
-                  setPlaceholderInfo(null);
-                  setSuggestion(null);
-                }}
-              >
-                ✕
-              </button>
-              <button
-                className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-                onClick={() => {
-                  // apply replacement
-                  const { editor, from, to } = placeholderInfo;
-                  editor
-                    .chain()
-                    .focus()
-                    .deleteRange({ from, to })
-                    .insertContentAt(from, suggestion)
-                    .run();
-                  // then clear out
-                  setPlaceholderInfo(null);
-                  setSuggestion(null);
-                }}
-              >
-                ✓
-              </button>
+
+              {/* “After” */}
+              <div>
+                <div className="text-sm text-gray-600 mb-1">After:</div>
+                <div className="text-gray-900 text-sm leading-snug">
+                  …{placeholderInfo.before}{" "}
+                  <span className="bg-yellow-100 px-1">X{suggestion}</span>{" "}
+                  {placeholderInfo.after}…
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex justify-end space-x-2">
+                <button
+                  className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 transition"
+                  onClick={() => {
+                    setPlaceholderInfo(null);
+                    setSuggestion(null);
+                  }}
+                >
+                  ✕ Dismiss
+                </button>
+                <button
+                  className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 transition"
+                  onClick={() => {
+                    const { editor, from, to } = placeholderInfo;
+                    editor
+                      .chain()
+                      .focus()
+                      .deleteRange({ from, to })
+                      .insertContentAt(from, suggestion)
+                      .run();
+                    setPlaceholderInfo(null);
+                    setSuggestion(null);
+                  }}
+                >
+                  ✓ Accept
+                </button>
+              </div>
             </div>
           </div>
         )}

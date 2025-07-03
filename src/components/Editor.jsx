@@ -14,15 +14,13 @@ export default function Editor({ onPlaceholder }) {
         class: [
           "ProseMirror",
           "w-full",
-          "h-full",
+          "h-[70vh]",
           "overflow-auto",
-          "min-h-full",
-          "p-[24px]",
           "rounded-lg",
-          "border border-gray-100",
-          "shadow-sm",
-          "focus:outline-none focus:ring-1 focus:gray-100",
+          "focus:outline-none", // remove the default outline
+          "focus:ring-0",
           "overflow-auto",
+          "pt-[10px]",
         ].join(" "),
       },
       plugins: [

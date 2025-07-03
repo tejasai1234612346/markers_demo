@@ -1,6 +1,7 @@
 // src/pages/EditorPage.jsx
 import React, { useState, useCallback } from "react";
 import Editor from "../components/Editor";
+import NavBar from "../components/NavBar";
 import suggestReplacement from "../services/apiServices";
 
 export default function EditorPage() {
@@ -14,47 +15,42 @@ export default function EditorPage() {
       if (loading) return;
       setLoading(true);
       setPlaceholderInfo(info);
-
       // 2. Call your AI helper
       const replacement = await suggestReplacement({
         before: info.before,
         after: info.after,
       });
-
       setLoading(false);
-
-      // 3. Verify the text is still “XXXX”
-      // const currentText = info.editor.getText().slice(info.from - 1, info.to - 1)
-      // if (currentText !== 'XXXX') {
-      //   console.warn('Placeholder moved—skipping replace')
-      //   return
-      // }
       setSuggestion(replacement);
-
-      // // 4. Apply the replacement
-      // info.editor
-      //   .chain()
-      //   .focus()
-      //   .deleteRange({ from: info.from, to: info.to })
-      //   .insertContentAt(info.from, replacement)
-      //   .run()
     },
     [loading]
   );
 
   return (
-    <div className="max-w-6xl mx-auto p-8 pl-[20px] flex items-start justify-around    gap-8">
-      <div className="w-[70vw]">
-        <h2 className="text-[32px] mb-4">Markers Demo</h2>
+    <div className="p-8 pl-[20px] h-[90vh] flex items-start justify-around  bg-gradient-to-br from-[#667eea] to-[#764ba2]   gap-8">
+      <div className="w-[70vw] rounded-2xl p-4 h-[100%] bg-white">
+        <div class="flex justify-between p-[6px] items-center border-b border-black/5">
+          <h2 className="text-[1.2rem] font-semibold text-[#2d3748]">
+            Document Editor
+          </h2>
+          <div class="flex gap-4 text-sm text-slate-500">
+            <span id="word-count">0 words</span>
+            <span id="char-count">0 characters</span>
+          </div>
+        </div>
 
         {/* 60vw × 70vh container */}
-        <div className="w-[60vw] h-[70vh]">
+        <div className="w-full h-[95%] p-2 overflow-auto">
           <Editor onPlaceholder={handlePlaceholder} />
         </div>
       </div>
-      <div className="w-[30vw]">
+      <div className="w-[30vw] p-4 rounded-2xl h-[100%] bg-white">
         {/* suggestion box */}
-        <h2 className="text-[32px] mb-4">Sugesstions</h2>
+        <div class="flex justify-between p-[6px] items-center border-b border-black/5">
+          <h2 className="text-[1.2rem] font-semibold text-[#2d3748]">
+            AI Suggestions
+          </h2>
+        </div>
         {placeholderInfo && suggestion && (
           <div className="w-[70%] p-4 bg-white border rounded shadow-lg">
             <div className="mb-3">

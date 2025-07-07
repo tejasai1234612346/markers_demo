@@ -1,12 +1,85 @@
-# React + Vite
+# 🧠 AI Placeholder Editor – Proof of Concept
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A rich text editor built with **React** and **Tiptap**, enhanced with **LLM (Gemini)** integration. It detects `XXXX` placeholders in a document, sends contextual prompts to an LLM, and allows you to apply or reject intelligent suggestions both inline (via tooltip) and in a synchronized sidebar.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Features
 
-## Expanding the ESLint configuration
+- 📝 Smart detection of `XXXX` placeholders in the editor
+- 🤖 Gemini LLM generates context-aware replacements
+- 🧠 Context-aware prompts using surrounding sentences
+- 🎯 Inline tooltips powered by **Tippy.js** for Apply/Reject actions
+- 🪟 Sidebar panel listing all current AI suggestions
+- ⚡ Parallel API requests for speed
+- ♻️ Modular, extendable architecture using **Tiptap** extensions
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+
+## 📁 Project Structure
+
+src/
+├── components/
+│ ├── Editor.jsx # Sets up the Tiptap editor and handles insertion
+│ └── ReplacementTooltip.jsx # Custom tooltip UI rendered using Tippy.js
+│
+├── extensions/
+│ └── AiPlaceholder.js # Tiptap custom inline node for AI placeholder
+│
+├── pages/
+│ └── EditorPage.jsx # Layout: Editor + Right-Side Suggestion Panel
+│
+├── services/
+│ └── apiServices.js # Communicates with Gemini LLM
+│
+public/
+└── index.html
+
+## 🛠️ Getting Started
+
+### 1. Clone the Repository
+
+gh repo clone tejasai1234612346/markers_demo
+cd marker-demo
+
+### 2.Install Dependencies
+
+npm install
+
+### 3.Start Development Server
+
+npm start
+
+✨ How It Works
+
+### 4. How it works
+
+## a.You write content like:
+
+The capital of India is XXXX. The PM is XXXX.
+
+## b.Clicking ▶️ triggers runAll():
+
+Finds all XXXX matches in the editor
+
+Extracts 500-character context on both sides
+
+Builds sentence-aware prompts
+
+Sends them to Gemini using Promise.all()
+
+Inserts AI placeholder nodes via Tiptap's command chain
+
+## c.Each node:
+
+Is wrapped in a styled span
+
+On hover, shows a tooltip with:
+
+Suggested replacement
+
+Source context
+
+Apply (✓) or Reject (✗) buttons
+
+The right panel shows all suggestions and tracks real-time state from the editor.

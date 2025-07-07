@@ -2,19 +2,23 @@
 import React, { useState, useCallback } from "react";
 import Editor from "../components/Editor";
 import suggestReplacement from "../services/apiServices";
+//Icons
 import { CiPlay1 } from "react-icons/ci";
 
 export default function EditorPage() {
-  const [suggestions, setSuggestions] = useState([]);
-  const [aiReplacement, setAiReplacement] = useState([]);
-  const [editorInstance, setEditorInstance] = useState(null);
+  // ====== State Setup ======
+  const [suggestions, setSuggestions] = useState([]); // Show AI suggestions in side panel
+  const [aiReplacement, setAiReplacement] = useState([]); // AI suggestoins sent to the editor
+  const [editorInstance, setEditorInstance] = useState(null); // Editor Reference
+
+  // ====== Trigger AI Suggestions on Run ======
   const runAll = async () => {
     if (!editorInstance) return;
-
     const text = editorInstance.getText();
     const { doc } = editorInstance.state;
     const replacements = [];
 
+    // Find every "XXXX" and collect context
     doc.descendants((node, pos) => {
       if (node.isText) {
         const regex = /\bXXXX\b/g;
@@ -30,7 +34,6 @@ export default function EditorPage() {
           const sentenceBefore = fullBefore.split(/(?<=[.?!])\s+/).pop() || "";
           const sentenceAfter = fullAfter.split(/(?<=[.?!])\s+/)[0] || "";
 
-          // Just use enough from current sentence
           const simplecontext =
             `${sentenceBefore} XXXX ${sentenceAfter}`.trim();
 
@@ -45,7 +48,7 @@ export default function EditorPage() {
       }
     });
 
-    // Parallel LLM suggestions
+    // Call LLM calls in parallel
     const enriched = await Promise.all(
       replacements.map(async (r, idx) => {
         const { replacement, context } = await suggestReplacement({
@@ -61,8 +64,10 @@ export default function EditorPage() {
         };
       })
     );
+    // Update both editor and side panel
     setAiReplacement(enriched);
   };
+  // Called from inside Editor on placeholder node insertion
   const handleNodeInserted = (node) => {
     setSuggestions((prev) => {
       const index = prev.findIndex((item) => item.id === node.id);
@@ -78,6 +83,7 @@ export default function EditorPage() {
     setEditorInstance(editor);
   }, []);
 
+  // ====== Layout Rendering ======
   return (
     <div className="p-8 pl-[20px] h-[90vh] flex items-start justify-around  bg-gradient-to-br from-gray-200 to-gray-400 gap-8">
       <div className="w-[70vw] rounded-2xl p-4 h-[100%] bg-white">
@@ -92,7 +98,7 @@ export default function EditorPage() {
           />
         </div>
 
-        {/* 60vw × 70vh container */}
+        {/* TipTap Editor Content */}
         <div className="w-full min-h-[90%] p-2 overflow-auto">
           <Editor
             onReady={handleEditorReady}
@@ -101,8 +107,9 @@ export default function EditorPage() {
           />
         </div>
       </div>
+
+      {/* Right-Side Suggestions Panel */}
       <div className="w-[30vw] p-4 rounded-2xl h-[100%]  bg-white overflow-scroll">
-        {/* suggestion box */}
         <div className="flex justify-between p-[6px] mb-[10px] items-center border-b border-black/5">
           <h2 className="text-[1.2rem] font-semibold text-[#2d3748]">
             AI Suggestions

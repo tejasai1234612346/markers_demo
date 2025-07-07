@@ -2,13 +2,24 @@
 import { Node, mergeAttributes } from "@tiptap/core";
 import { ReactNodeViewRenderer, NodeViewWrapper } from "@tiptap/react";
 import PlaceholderTooltip from "./ReplacementTooltip";
-
+/**
+ * Custom TipTap Node: ai_placeholder
+ *
+ * Replaces "XXXX" with an interactive inline element.
+ * Shows tooltip with AI-generated suggestion and optional context.
+ *
+ * Attributes:
+ * - text: original placeholder text ("XXXX")
+ * - replacement: LLM-suggested replacement
+ * - context: explanation or supporting info
+ * - id: unique ID used for syncing with suggestion panel
+ */
 export default Node.create({
   name: "ai_placeholder",
   group: "inline",
   inline: true,
-  atom: true,
-
+  atom: true, // treated as a single unit in editor (can't be split)
+  // === Define attributes ===
   addAttributes() {
     return {
       text: { default: "XXXX" },
@@ -17,11 +28,11 @@ export default Node.create({
       id: { default: null },
     };
   },
-
+  // === HTML parsing support ===
   parseHTML() {
     return [{ tag: "span[data-ai-placeholder]" }];
   },
-
+  // === Output HTML when serializing content ===
   renderHTML({ HTMLAttributes }) {
     return [
       "span",
@@ -31,7 +42,7 @@ export default Node.create({
       }),
     ];
   },
-
+  // === Custom React NodeView for Tooltip interactions ===
   addNodeView() {
     return ReactNodeViewRenderer(
       ({ node, updateAttributes, editor, getPos }) => {

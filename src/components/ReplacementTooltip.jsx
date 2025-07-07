@@ -3,6 +3,11 @@ import React from "react";
 import Tippy from "@tippyjs/react/headless";
 import "tippy.js/dist/tippy.css";
 
+/**
+ * Tooltip UI for AI suggestions.
+ * Appears when user hovers over "XXXX" inline node.
+ * Displays suggested replacement and context, with Apply & Reject buttons.
+ */
 export default function PlaceholderTooltip({
   text,
   replacement,
@@ -10,6 +15,7 @@ export default function PlaceholderTooltip({
   onApply,
   onReject,
 }) {
+  // Tooltip content
   const renderTooltip = (attrs) => (
     <div
       tabIndex="-1"
@@ -25,6 +31,7 @@ export default function PlaceholderTooltip({
         zIndex: 1000,
       }}
     >
+      {/* Tooltip Header */}
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <p style={{ fontWeight: "600" }}>Suggested change</p>
         <button
@@ -40,6 +47,7 @@ export default function PlaceholderTooltip({
           X
         </button>
       </div>
+      {/* Replacement Block */}
       <div
         style={{
           border: "1px solid #BDBDBD",
@@ -84,6 +92,7 @@ export default function PlaceholderTooltip({
           {replacement}
         </div>
       </div>
+      {/* Optional Context */}
       {context && (
         <div
           style={{

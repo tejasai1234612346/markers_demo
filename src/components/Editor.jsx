@@ -1,16 +1,21 @@
 import React, { useEffect } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import ReplacementMark from "./ReplacementMark";
 import { Plugin } from "prosemirror-state";
-
+import AiPlaceholder from "./AiPlaceholder";
+/**
+ * TipTap Editor integrated with AI placeholder support
+ * - Inserts custom nodes with LLM-generated suggestions
+ * - Notifies parent via `onNodeInserted` when a placeholder is rendered
+ */
 export default function Editor({
-  aiReplacements = [],
-  onReady,
-  onNodeInserted,
+  aiReplacements = [], // List of AI suggestion objects with position + data
+  onReady, // Callback to expose TipTap instance
+  onNodeInserted, // Callback when an AI node is inserted (sync with right panel)
 }) {
+  // ====== Initialize TipTap Editor ======
   const editor = useEditor({
-    extensions: [StarterKit, ReplacementMark],
+    extensions: [StarterKit, AiPlaceholder],
     content: "<p>Type something like XXXX to replace</p>",
     editorProps: {
       attributes: {
@@ -28,33 +33,34 @@ export default function Editor({
       },
       plugins: [
         new Plugin({
-          props: {},
+          props: {}, // Add custom plugin logic here if needed
         }),
       ],
     },
     autofocus: "end",
     onCreate({ editor }) {
-      onReady?.(editor);
+      onReady?.(editor); // Expose editor on mount
     },
     onUpdate({ editor }) {
-      onReady?.(editor);
+      onReady?.(editor); // Keep reference fresh on every change
     },
   });
-
+  // ====== Insert AI Suggestions as Custom Nodes ======
   useEffect(() => {
     if (!editor) return;
     const chain = editor.chain().focus();
-
+    // Loop through new replacements and insert AI placeholder nodes
     [...aiReplacements]
       .reverse()
       .forEach(({ from, to, replacement, context, id, text }) => {
         const currentText = editor.state.doc.textBetween(from, to);
         if (currentText === "XXXX") {
+          // Replace "XXXX" with custom node
           chain.deleteRange({ from, to }).insertContentAt(from, {
             type: "ai_placeholder",
             attrs: { text: "XXXX", replacement, context, id },
           });
-          // notify parent to add this to suggestions panel
+          // Report to parent so it appears in the right panel
           const docText = editor.state.doc.textBetween(
             0,
             editor.state.doc.content.size
@@ -71,7 +77,7 @@ export default function Editor({
           });
         }
       });
-
+    // Commit all changes to editor state
     chain.run();
   }, [aiReplacements, editor]);
 

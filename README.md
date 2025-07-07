@@ -54,11 +54,11 @@ npm start
 
 ### 4. How it works
 
-## a.You write content like:
+#### a.You write content like:
 
 The capital of India is XXXX. The PM is XXXX.
 
-## b.Clicking ▶️ triggers runAll():
+#### b.Clicking ▶️ triggers runAll():
 
 Finds all XXXX matches in the editor
 
@@ -70,7 +70,7 @@ Sends them to Gemini using Promise.all()
 
 Inserts AI placeholder nodes via Tiptap's command chain
 
-## c.Each node:
+#### c.Each node:
 
 Is wrapped in a styled span
 

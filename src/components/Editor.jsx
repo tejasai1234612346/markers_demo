@@ -16,7 +16,8 @@ export default function Editor({
   // ====== Initialize TipTap Editor ======
   const editor = useEditor({
     extensions: [StarterKit, AiPlaceholder],
-    content: "<p>Type something like XXXX to replace</p>",
+    content:
+      "<p>India got independence in year XXXX. Inida capital is XXXX</p>",
     editorProps: {
       attributes: {
         class: [

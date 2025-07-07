@@ -38,19 +38,19 @@ Respond in this JSON format without markdown:
     const { candidates } = await res.json();
     let raw = candidates?.[0]?.content?.parts?.[0]?.text || "";
 
-    // 🔥 Remove markdown block ```json ... ``` if present
+    // Remove markdown block ```json ... ``` if present
     raw = raw.replace(/```json|```/g, "").trim();
 
     const parsed = JSON.parse(raw);
 
     return {
-      replacement: parsed.replacement?.trim() || "replacement",
-      context: parsed.context?.trim() || "",
+      replacement: parsed.replacement?.trim() || "No replacement found",
+      context: parsed.context?.trim() || "No context available.",
     };
   } catch (err) {
     console.warn("Gemini call failed, stub replacement:", err);
     return {
-      replacement: "replacement",
+      replacement: "No replacement found",
       context: "No context available.",
     };
   }

@@ -34,8 +34,12 @@ export default function EditorPage() {
           const sentenceBefore = fullBefore.split(/(?<=[.?!])\s+/).pop() || "";
           const sentenceAfter = fullAfter.split(/(?<=[.?!])\s+/)[0] || "";
 
-          const simplecontext =
-            `${sentenceBefore} XXXX ${sentenceAfter}`.trim();
+          // const simplecontext =
+          //   `${sentenceBefore} XXXX ${sentenceAfter}`.trim();
+          const simplecontext = `${sentenceBefore.replace(
+            /XXXX/g,
+            ""
+          )} XXXX ${sentenceAfter.replace(/XXXX/g, "")}`;
 
           replacements.push({
             from: start,
@@ -112,7 +116,7 @@ export default function EditorPage() {
       <div className="w-[30vw] p-4 rounded-2xl h-[100%]  bg-white overflow-scroll">
         <div className="flex justify-between p-[6px] mb-[10px] items-center border-b border-black/5">
           <h2 className="text-[1.2rem] font-semibold text-[#2d3748]">
-            AI Suggestions
+            AI Suggestions History
           </h2>
         </div>
 

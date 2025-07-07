@@ -17,7 +17,7 @@ export default function Editor({
   const editor = useEditor({
     extensions: [StarterKit, AiPlaceholder],
     content:
-      "<p>India got independence in year XXXX. Inida capital is XXXX</p>",
+      "<p>India got independence in year XXXX. India capital is XXXX</p>",
     editorProps: {
       attributes: {
         class: [

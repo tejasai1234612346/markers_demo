@@ -8,7 +8,7 @@ export default function NavBar() {
       <div className="flex items-center text-white space-x-2">
         <span className="text-2xl">🔥</span>
         <span className="text-2xl font-bold bg-gradient-to-br from-[#667eea] to-[#764ba2] bg-clip-text text-transparent">
-          Teja Demo
+          Editor
         </span>
       </div>
 

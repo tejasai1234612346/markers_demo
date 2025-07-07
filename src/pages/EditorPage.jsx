@@ -2,44 +2,81 @@
 import React, { useState, useCallback } from "react";
 import Editor from "../components/Editor";
 import suggestReplacement from "../services/apiServices";
+import { CiPlay1 } from "react-icons/ci";
 
 export default function EditorPage() {
-  const [loading, setLoading] = useState(false);
-
   const [suggestions, setSuggestions] = useState([]);
-  const handlePlaceholder = useCallback(
-    async (info) => {
-      if (loading) return;
-      setLoading(true);
+  const [aiReplacement, setAiReplacement] = useState([]);
+  const [editorInstance, setEditorInstance] = useState(null);
+  const runAll = async () => {
+    if (!editorInstance) return;
 
-      // 1) Get AI suggestion
-      const replacement = await suggestReplacement({
-        before: info.before,
-        after: info.after,
-      });
-      setLoading(false);
+    const text = editorInstance.getText();
+    const { doc } = editorInstance.state;
+    const replacements = [];
 
-      // 2) Immediately apply it in the editor
-      info.editor
-        .chain()
-        .focus()
-        .deleteRange({ from: info.from, to: info.to })
-        .insertContentAt(info.from, replacement)
-        .run();
+    doc.descendants((node, pos) => {
+      if (node.isText) {
+        const regex = /\bXXXX\b/g;
+        let match;
+        while ((match = regex.exec(node.text)) !== null) {
+          const start = pos + match.index;
+          const end = start + match[0].length;
 
-      // 3) Record it in your history
-      setSuggestions((all) => [
-        ...all,
-        {
-          id: Date.now(), // simple unique key
-          before: info.before,
-          after: info.after,
+          const fullBefore = text.slice(Math.max(0, start - 500), start);
+          const fullAfter = text.slice(end, end + 500);
+          const safeBefore = fullBefore.split("XXXX").pop();
+          const safeAfter = fullAfter.split("XXXX")[0];
+          const sentenceBefore = fullBefore.split(/(?<=[.?!])\s+/).pop() || "";
+          const sentenceAfter = fullAfter.split(/(?<=[.?!])\s+/)[0] || "";
+
+          // Just use enough from current sentence
+          const simplecontext =
+            `${sentenceBefore} XXXX ${sentenceAfter}`.trim();
+
+          replacements.push({
+            from: start,
+            to: end,
+            before: safeBefore,
+            after: safeAfter,
+            simplecontext: simplecontext,
+          });
+        }
+      }
+    });
+
+    // Parallel LLM suggestions
+    const enriched = await Promise.all(
+      replacements.map(async (r, idx) => {
+        const { replacement, context } = await suggestReplacement({
+          before: r.before,
+          after: r.after,
+          context: r.simplecontext,
+        });
+        return {
+          ...r,
           replacement,
-        },
-      ]);
-    },
-    [loading]
-  );
+          context,
+          id: Date.now() + idx,
+        };
+      })
+    );
+    setAiReplacement(enriched);
+  };
+  const handleNodeInserted = (node) => {
+    setSuggestions((prev) => {
+      const index = prev.findIndex((item) => item.id === node.id);
+      if (index !== -1) {
+        const updated = [...prev];
+        updated[index] = node;
+        return updated;
+      }
+      return [...prev, node];
+    });
+  };
+  const handleEditorReady = useCallback((editor) => {
+    setEditorInstance(editor);
+  }, []);
 
   return (
     <div className="p-8 pl-[20px] h-[90vh] flex items-start justify-around  bg-gradient-to-br from-gray-200 to-gray-400 gap-8">
@@ -48,37 +85,45 @@ export default function EditorPage() {
           <h2 className="text-[1.2rem] font-semibold text-[#2d3748]">
             Document Editor
           </h2>
+          <CiPlay1
+            className="cursor-pointer border border-[#764ba2] text-[#764ba2] h-8 w-8 p-2 rounded-md"
+            color="#764ba2"
+            onClick={() => runAll()}
+          />
         </div>
 
         {/* 60vw × 70vh container */}
         <div className="w-full min-h-[90%] p-2 overflow-auto">
-          <Editor onPlaceholder={handlePlaceholder} />
+          <Editor
+            onReady={handleEditorReady}
+            aiReplacements={aiReplacement}
+            onNodeInserted={handleNodeInserted}
+          />
         </div>
       </div>
       <div className="w-[30vw] p-4 rounded-2xl h-[100%]  bg-white overflow-scroll">
         {/* suggestion box */}
         <div className="flex justify-between p-[6px] mb-[10px] items-center border-b border-black/5">
           <h2 className="text-[1.2rem] font-semibold text-[#2d3748]">
-            AI Suggestions Made
+            AI Suggestions
           </h2>
         </div>
 
         {suggestions.map((s) => (
-          <div
-            key={s.id}
-            className="mb-4 w-[95%] p-4 bg-gray-50 rounded-lg shadow-sm"
-          >
+          <div key={s.id} className="mb-4 p-4 bg-gray-50 rounded-lg shadow-sm">
             <div className="text-xs text-gray-500 mb-1">Before:</div>
             <div className="italic text-gray-800 mb-2">
               …{s.before}
               <span className="bg-yellow-200 px-1">XXXX</span>
               {s.after}…
             </div>
-            <div className="text-xs text-gray-500 mb-1">Replaced With:</div>
+            <div className="text-xs text-gray-500 mb-1">AI Replacement:</div>
             <div className="italic text-gray-800 mb-2">
-              …{s.before}
-              <span className="bg-orange-200 px-1">{s.replacement}</span>
-              {s.after}…
+              <div className="italic text-gray-800 mb-2">
+                …{s.before}
+                <span className="bg-orange-200 px-1">{s.replacement}</span>
+                {s.after}…
+              </div>
             </div>
           </div>
         ))}
